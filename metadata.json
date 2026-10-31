@@ -1,0 +1,6 @@
+{
+  "name": "v2rayNG",
+  "description": "Android client for V2Ray / Xray proxy protocols, subscription management, and network routing",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
