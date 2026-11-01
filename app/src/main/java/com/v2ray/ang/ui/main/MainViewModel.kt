@@ -45,25 +45,39 @@ import java.util.regex.PatternSyntaxException
 
 private fun applyTestDelayResults(
     servers: List<ServersCache>,
-    updates: Map<String, Long>,
+    updates: Map<String, RealPingResult>,
 ): List<ServersCache> = servers.map { server ->
-    val delayMillis = updates[server.guid]
-    if (delayMillis == null || delayMillis == server.testDelayMillis) {
+    val res = updates[server.guid]
+    if (res == null) {
         server
     } else {
-        server.copy(testDelayMillis = delayMillis)
+        server.copy(
+            testDelayMillis = res.delayMillis,
+            downloadSpeedMbps = res.downloadSpeedMbps ?: server.downloadSpeedMbps,
+            uploadSpeedMbps = res.uploadSpeedMbps ?: server.uploadSpeedMbps,
+            pingMs = res.pingMs ?: if (res.delayMillis > 0) res.delayMillis else server.pingMs,
+            jitterMs = res.jitterMs ?: server.jitterMs,
+            testStatus = res.testStatus ?: server.testStatus,
+        )
     }
 }
 
 private fun applyTestDelayResultsToRows(
     rows: List<ServerRowUiModel>,
-    updates: Map<String, Long>,
+    updates: Map<String, RealPingResult>,
 ): List<ServerRowUiModel> = rows.map { row ->
-    val delayMillis = updates[row.guid]
-    if (delayMillis == null || delayMillis == row.testDelayMillis) {
+    val res = updates[row.guid]
+    if (res == null) {
         row
     } else {
-        row.copy(testDelayMillis = delayMillis)
+        row.copy(
+            testDelayMillis = res.delayMillis,
+            downloadSpeedMbps = res.downloadSpeedMbps ?: row.downloadSpeedMbps,
+            uploadSpeedMbps = res.uploadSpeedMbps ?: row.uploadSpeedMbps,
+            pingMs = res.pingMs ?: if (res.delayMillis > 0) res.delayMillis else row.pingMs,
+            jitterMs = res.jitterMs ?: row.jitterMs,
+            testStatus = res.testStatus ?: row.testStatus,
+        )
     }
 }
 
@@ -105,7 +119,7 @@ class MainViewModel(
     private var selectedGroupLoadJob: Job? = null
     private var reloadJob: Job? = null
     private var testResultFlushJob: Job? = null
-    private val pendingTestResults = linkedMapOf<String, Long>()
+    private val pendingTestResults = linkedMapOf<String, RealPingResult>()
 
     private val testRequests = MainTestRequests()
     private var bulkTestJob: Job? = null
@@ -186,7 +200,7 @@ class MainViewModel(
     }
 
     private fun queueTestResult(result: RealPingResult, request: MainTestRequests.Bulk) {
-        pendingTestResults[result.guid] = result.delayMillis
+        pendingTestResults[result.guid] = result
         if (testResultFlushJob?.isActive == true) return
 
         testResultFlushJob = viewModelScope.launch {
@@ -279,6 +293,9 @@ class MainViewModel(
             MainAction.RefreshGroups -> setupGroupTab(forceRefresh = true)
             MainAction.TestAllServers -> testAllRealPing(true)
             MainAction.TestRealAllServers -> testAllRealPing()
+            MainAction.TestBenchmarkAllServers -> testAllBenchmark(latencyOnly = false)
+            is MainAction.TestBenchmarkSelectedServer -> testSelectedServerBenchmark(action.guid)
+            MainAction.RetryFailedBenchmarks -> retryFailedBenchmarks()
             MainAction.CancelTesting -> cancelAllPing()
             MainAction.RemoveAllServers -> removeAllServerAsync()
             MainAction.RemoveDuplicateServers -> removeDuplicateServerAsync()
@@ -353,7 +370,13 @@ class MainViewModel(
             ServersCache(
                 guid = guid,
                 profile = profile.copy(),
-                testDelayMillis = affiliation?.testDelayMillis ?: 0L
+                testDelayMillis = affiliation?.testDelayMillis ?: 0L,
+                downloadSpeedMbps = affiliation?.downloadSpeedMbps,
+                uploadSpeedMbps = affiliation?.uploadSpeedMbps,
+                pingMs = affiliation?.pingMs,
+                jitterMs = affiliation?.jitterMs,
+                testStatus = affiliation?.testStatus,
+                testTimestamp = affiliation?.testTimestamp ?: 0L,
             )
         }
 
@@ -882,6 +905,73 @@ class MainViewModel(
                 }
             }
             dataSource.sendMsg2TestService(message, request.id)
+        }
+    }
+
+    fun testAllBenchmark(latencyOnly: Boolean = false, targetGuids: List<String>? = null) {
+        cancelAllPing()
+        val groupId = uiState.value.selectedGroupId
+        val servers = currentServers()
+        if (servers.isEmpty()) return
+
+        val serverGuids = targetGuids ?: servers.map { it.guid }
+        if (serverGuids.isEmpty()) return
+
+        val resetGuids = serverGuids.toHashSet()
+        mutableServerGroupState(groupId).update { current ->
+            current.copy(
+                servers = current.servers.map { server ->
+                    if (server.guid in resetGuids) server.copy(testDelayMillis = 0L, testStatus = "TESTING")
+                    else server
+                },
+                rows = current.rows.map { row ->
+                    if (row.guid in resetGuids) row.copy(testDelayMillis = 0L, testStatus = "TESTING")
+                    else row
+                }
+            )
+        }
+        val request = testRequests.beginBulk(groupId)
+        val message = TestServiceMessage(
+            key = AppConfig.MSG_MEASURE_CONFIG_START,
+            subscriptionId = groupId,
+            serverGuids = serverGuids,
+            onlyTcp = false,
+            isBenchmark = true,
+            latencyOnly = latencyOnly
+        )
+        _uiState.update {
+            it.copy(
+                isTesting = true,
+                status = MainStatus.Testing
+            )
+        }
+        bulkTestJob = viewModelScope.launch {
+            withContext(ioDispatcher) {
+                dataSource.clearAllTestDelayResults(serverGuids)
+                cacheMutex.withLock {
+                    groupDataCache[groupId]?.let { cached ->
+                        groupDataCache[groupId] = cached.map { server ->
+                            if (server.guid !in resetGuids || server.testDelayMillis == 0L) server
+                            else server.copy(testDelayMillis = 0L, testStatus = null)
+                        }
+                    }
+                }
+            }
+            dataSource.sendMsg2TestService(message, request.id)
+        }
+    }
+
+    fun testSelectedServerBenchmark(guid: String) {
+        testAllBenchmark(latencyOnly = false, targetGuids = listOf(guid))
+    }
+
+    fun retryFailedBenchmarks() {
+        val servers = currentServers()
+        val failedGuids = servers.filter {
+            it.testStatus == "FAILED" || it.testDelayMillis < 0L
+        }.map { it.guid }
+        if (failedGuids.isNotEmpty()) {
+            testAllBenchmark(latencyOnly = false, targetGuids = failedGuids)
         }
     }
 

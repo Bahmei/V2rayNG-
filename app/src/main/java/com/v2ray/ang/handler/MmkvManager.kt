@@ -487,11 +487,40 @@ object MmkvManager {
         }
         val aff = decodeServerAffiliationInfo(guid) ?: ServerAffiliationInfo()
         aff.testDelayMillis = testResult
+        aff.pingMs = if (testResult > 0) testResult else null
         serverAffStorage.encode(guid, JsonUtil.toJson(aff))
     }
 
     /**
-     * Clears all test delay results.
+     * Encodes full benchmark results (Download, Upload, Ping, Jitter).
+     */
+    fun encodeServerBenchmarkResult(
+        guid: String,
+        delayMillis: Long,
+        downloadMbps: Double? = null,
+        uploadMbps: Double? = null,
+        pingMs: Long? = null,
+        jitterMs: Double? = null,
+        status: String? = null,
+        benchmarkServer: String? = null,
+    ) {
+        if (guid.isBlank()) return
+        val aff = decodeServerAffiliationInfo(guid) ?: ServerAffiliationInfo()
+        aff.testDelayMillis = delayMillis
+        aff.downloadSpeedMbps = downloadMbps
+        aff.uploadSpeedMbps = uploadMbps
+        aff.pingMs = pingMs ?: if (delayMillis > 0) delayMillis else null
+        aff.jitterMs = jitterMs
+        aff.testStatus = status
+        aff.testTimestamp = System.currentTimeMillis()
+        if (!benchmarkServer.isNullOrBlank()) {
+            aff.benchmarkServer = benchmarkServer
+        }
+        serverAffStorage.encode(guid, JsonUtil.toJson(aff))
+    }
+
+    /**
+     * Clears all test delay and benchmark results.
      *
      * @param keys The list of server GUIDs.
      */
@@ -499,6 +528,11 @@ object MmkvManager {
         keys?.forEach { key ->
             decodeServerAffiliationInfo(key)?.let { aff ->
                 aff.testDelayMillis = 0
+                aff.downloadSpeedMbps = null
+                aff.uploadSpeedMbps = null
+                aff.pingMs = null
+                aff.jitterMs = null
+                aff.testStatus = null
                 serverAffStorage.encode(key, JsonUtil.toJson(aff))
             }
         }

@@ -123,6 +123,8 @@ class CoreTestService : Service() {
                 context = this,
                 guids = guidsList,
                 onlyTcp = message.onlyTcp,
+                isBenchmark = message.isBenchmark,
+                latencyOnly = message.latencyOnly,
                 onEvent = { event ->
                     if (activeWorkers.containsKey(worker)) {
                         handleWorkerEvent(event, message, requestId) { activeWorkers.remove(worker) }
@@ -151,11 +153,31 @@ class CoreTestService : Service() {
             }
 
             is RealPingEvent.Result -> {
-                MmkvManager.encodeServerTestDelayMillis(event.guid, event.delayMillis)
+                if (event.downloadSpeedMbps != null || event.uploadSpeedMbps != null || event.jitterMs != null || event.testStatus != null) {
+                    MmkvManager.encodeServerBenchmarkResult(
+                        guid = event.guid,
+                        delayMillis = event.delayMillis,
+                        downloadMbps = event.downloadSpeedMbps,
+                        uploadMbps = event.uploadSpeedMbps,
+                        pingMs = event.pingMs,
+                        jitterMs = event.jitterMs,
+                        status = event.testStatus
+                    )
+                } else {
+                    MmkvManager.encodeServerTestDelayMillis(event.guid, event.delayMillis)
+                }
                 MessageHelper.sendMsg2UI(
                     this,
                     AppConfig.MSG_MEASURE_CONFIG_SUCCESS,
-                    RealPingResult(event.guid, event.delayMillis),
+                    RealPingResult(
+                        guid = event.guid,
+                        delayMillis = event.delayMillis,
+                        downloadSpeedMbps = event.downloadSpeedMbps,
+                        uploadSpeedMbps = event.uploadSpeedMbps,
+                        pingMs = event.pingMs,
+                        jitterMs = event.jitterMs,
+                        testStatus = event.testStatus
+                    ),
                     requestId,
                 )
             }

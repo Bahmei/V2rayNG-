@@ -112,6 +112,7 @@ fun SettingsScreen(
     var fragmentSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     var observatorySettingsExpanded by rememberSaveable { mutableStateOf(false) }
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(true) }
+    var benchmarkSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     var modeSettingsExpanded by rememberSaveable { mutableStateOf(true) }
 
     var localDns by rememberMmkvBool(AppConfig.PREF_LOCAL_DNS_ENABLED, false)
@@ -180,6 +181,15 @@ fun SettingsScreen(
     var delayTestUrl by rememberMmkvString(AppConfig.PREF_DELAY_TEST_URL, "")
     var realPingConcurrency by rememberMmkvString(AppConfig.PREF_REAL_PING_CONCURRENCY, "16")
     var ipApiUrl by rememberMmkvString(AppConfig.PREF_IP_API_URL, "")
+
+    var benchmarkServerUrl by rememberMmkvString(AppConfig.PREF_BENCHMARK_SERVER_URL, AppConfig.DEFAULT_BENCHMARK_SERVER_URL)
+    var benchmarkDownDuration by rememberMmkvString(AppConfig.PREF_BENCHMARK_DOWNLOAD_DURATION, "5")
+    var benchmarkUpDuration by rememberMmkvString(AppConfig.PREF_BENCHMARK_UPLOAD_DURATION, "5")
+    var benchmarkMaxDownMb by rememberMmkvString(AppConfig.PREF_BENCHMARK_MAX_DOWNLOAD_MB, "20")
+    var benchmarkMaxUpMb by rememberMmkvString(AppConfig.PREF_BENCHMARK_MAX_UPLOAD_MB, "10")
+    var benchmarkPingCount by rememberMmkvString(AppConfig.PREF_BENCHMARK_PING_COUNT, "5")
+    var benchmarkTimeout by rememberMmkvString(AppConfig.PREF_BENCHMARK_TIMEOUT_SECONDS, "10")
+    var benchmarkConcurrency by rememberMmkvString(AppConfig.PREF_BENCHMARK_CONCURRENCY, "1")
 
     val isVpn = mode == VPN
     val hevTunEnabled = isVpn && useHevTun
@@ -666,6 +676,61 @@ fun SettingsScreen(
                     title = stringResource(R.string.title_pref_ip_api_url),
                     value = ipApiUrl,
                     onValueChanged = { ipApiUrl = it }
+                )
+            }
+
+            CollapsiblePreferenceGroupHeader(
+                title = stringResource(R.string.title_pref_benchmark_category),
+                expanded = benchmarkSettingsExpanded,
+                onExpandedChange = { benchmarkSettingsExpanded = it }
+            )
+            if (benchmarkSettingsExpanded) {
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_server_url),
+                    value = benchmarkServerUrl,
+                    onValueChanged = { benchmarkServerUrl = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_download_duration),
+                    value = benchmarkDownDuration,
+                    keyboardNumber = true,
+                    onValueChanged = { benchmarkDownDuration = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_upload_duration),
+                    value = benchmarkUpDuration,
+                    keyboardNumber = true,
+                    onValueChanged = { benchmarkUpDuration = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_max_download_mb),
+                    value = benchmarkMaxDownMb,
+                    keyboardNumber = true,
+                    onValueChanged = { benchmarkMaxDownMb = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_max_upload_mb),
+                    value = benchmarkMaxUpMb,
+                    keyboardNumber = true,
+                    onValueChanged = { benchmarkMaxUpMb = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_ping_count),
+                    value = benchmarkPingCount,
+                    keyboardNumber = true,
+                    onValueChanged = { benchmarkPingCount = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_timeout),
+                    value = benchmarkTimeout,
+                    keyboardNumber = true,
+                    onValueChanged = { benchmarkTimeout = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_benchmark_concurrency),
+                    value = benchmarkConcurrency,
+                    keyboardNumber = true,
+                    onValueChanged = { benchmarkConcurrency = it }
                 )
             }
 

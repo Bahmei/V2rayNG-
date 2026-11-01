@@ -579,4 +579,43 @@ object SettingsManager {
         }
     }
 
+    fun getBenchmarkServerUrl(): String {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_SERVER_URL)
+            ?.takeIf { it.isNotBlank() } ?: AppConfig.DEFAULT_BENCHMARK_SERVER_URL
+    }
+
+    fun getBenchmarkDownloadDuration(): Int {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_DOWNLOAD_DURATION)?.toIntOrNull()
+            ?.coerceIn(1, 60) ?: AppConfig.DEFAULT_BENCHMARK_DOWNLOAD_DURATION
+    }
+
+    fun getBenchmarkUploadDuration(): Int {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_UPLOAD_DURATION)?.toIntOrNull()
+            ?.coerceIn(1, 60) ?: AppConfig.DEFAULT_BENCHMARK_UPLOAD_DURATION
+    }
+
+    fun getBenchmarkMaxDownloadMb(): Int {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_MAX_DOWNLOAD_MB)?.toIntOrNull()
+            ?.coerceIn(1, 500) ?: AppConfig.DEFAULT_BENCHMARK_MAX_DOWNLOAD_MB
+    }
+
+    fun getBenchmarkMaxUploadMb(): Int {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_MAX_UPLOAD_MB)?.toIntOrNull()
+            ?.coerceIn(1, 200) ?: AppConfig.DEFAULT_BENCHMARK_MAX_UPLOAD_MB
+    }
+
+    fun getBenchmarkPingCount(): Int {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_PING_COUNT)?.toIntOrNull()
+            ?.coerceIn(2, 30) ?: AppConfig.DEFAULT_BENCHMARK_PING_COUNT
+    }
+
+    fun getBenchmarkTimeoutSeconds(): Int {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_TIMEOUT_SECONDS)?.toIntOrNull()
+            ?.coerceIn(3, 60) ?: AppConfig.DEFAULT_BENCHMARK_TIMEOUT_SECONDS
+    }
+
+    fun getBenchmarkConcurrency(): Int {
+        return MmkvManager.decodeSettingsString(AppConfig.PREF_BENCHMARK_CONCURRENCY)?.toIntOrNull()
+            ?.coerceIn(1, 8) ?: AppConfig.DEFAULT_BENCHMARK_CONCURRENCY
+    }
 }

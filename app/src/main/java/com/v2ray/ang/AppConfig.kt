@@ -90,6 +90,25 @@ object AppConfig {
     const val PREF_AUTO_SORT_AFTER_TEST = "pref_auto_sort_after_test"
     const val PREF_REAL_PING_CONCURRENCY = "pref_real_ping_concurrency"
 
+    /** Network Benchmark preferences */
+    const val PREF_BENCHMARK_SERVER_URL = "pref_benchmark_server_url"
+    const val PREF_BENCHMARK_DOWNLOAD_DURATION = "pref_benchmark_download_duration"
+    const val PREF_BENCHMARK_UPLOAD_DURATION = "pref_benchmark_upload_duration"
+    const val PREF_BENCHMARK_MAX_DOWNLOAD_MB = "pref_benchmark_max_download_mb"
+    const val PREF_BENCHMARK_MAX_UPLOAD_MB = "pref_benchmark_max_upload_mb"
+    const val PREF_BENCHMARK_PING_COUNT = "pref_benchmark_ping_count"
+    const val PREF_BENCHMARK_TIMEOUT_SECONDS = "pref_benchmark_timeout_seconds"
+    const val PREF_BENCHMARK_CONCURRENCY = "pref_benchmark_concurrency"
+
+    const val DEFAULT_BENCHMARK_SERVER_URL = "https://speed.cloudflare.com"
+    const val DEFAULT_BENCHMARK_DOWNLOAD_DURATION = 5
+    const val DEFAULT_BENCHMARK_UPLOAD_DURATION = 5
+    const val DEFAULT_BENCHMARK_MAX_DOWNLOAD_MB = 20
+    const val DEFAULT_BENCHMARK_MAX_UPLOAD_MB = 10
+    const val DEFAULT_BENCHMARK_PING_COUNT = 5
+    const val DEFAULT_BENCHMARK_TIMEOUT_SECONDS = 10
+    const val DEFAULT_BENCHMARK_CONCURRENCY = 1
+
     /** Cache keys. */
     const val CACHE_SUBSCRIPTION_ID = "cache_subscription_id"
 

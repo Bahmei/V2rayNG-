@@ -35,6 +35,7 @@ class MainImportMenuTest {
     fun complexMoreMenuRetainsManagementActions() {
         val expected = listOf(
             ServerMenuAction.ShareFullContent,
+            ServerMenuAction.TestSpeed,
             ServerMenuAction.Edit,
             ServerMenuAction.Delete,
         )

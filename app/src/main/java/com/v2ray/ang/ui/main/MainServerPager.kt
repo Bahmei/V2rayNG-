@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -27,10 +28,13 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -444,7 +448,7 @@ private fun ServerListItem(
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     row.typeDescription,
                     modifier = Modifier.weight(1f, fill = false),
@@ -453,16 +457,116 @@ private fun ServerListItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    testResult,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (row.testDelayMillis < 0L) colorPingRed else colorPing,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (row.testStatus == "TESTING") {
+                    BenchmarkPill(
+                        text = stringResource(R.string.benchmark_status_testing),
+                        bgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        fgColor = MaterialTheme.colorScheme.primary
+                    )
+                } else if (row.downloadSpeedMbps == null && row.uploadSpeedMbps == null && row.jitterMs == null && testResult.isNotBlank()) {
+                    Text(
+                        testResult,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (row.testDelayMillis < 0L) colorPingRed else colorPing,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+            if (row.downloadSpeedMbps != null || row.uploadSpeedMbps != null || row.jitterMs != null || (row.pingMs != null && row.testDelayMillis > 0L)) {
+                BenchmarkMetricsView(row)
             }
         }
+    }
+}
+
+@Composable
+private fun BenchmarkMetricsView(row: ServerRowUiModel) {
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        // Ping
+        val ping = row.pingMs ?: if (row.testDelayMillis > 0) row.testDelayMillis else null
+        if (ping != null) {
+            val (pingBg, pingFg) = when {
+                ping < 100 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                ping < 300 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
+                else -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+            }
+            BenchmarkPill(
+                text = "Ping: $ping ms",
+                bgColor = pingBg,
+                fgColor = pingFg
+            )
+        } else if (row.testDelayMillis < 0L || row.testStatus == "FAILED") {
+            BenchmarkPill(
+                text = "Ping: " + stringResource(R.string.benchmark_status_failed),
+                bgColor = Color(0xFFFFEBEE),
+                fgColor = Color(0xFFC62828)
+            )
+        }
+
+        // Jitter
+        if (row.jitterMs != null) {
+            val (jitBg, jitFg) = when {
+                row.jitterMs < 15.0 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                row.jitterMs < 50.0 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
+                else -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+            }
+            BenchmarkPill(
+                text = String.format(java.util.Locale.US, "Jitter: %.2f ms", row.jitterMs),
+                bgColor = jitBg,
+                fgColor = jitFg
+            )
+        }
+
+        // Download
+        if (row.downloadSpeedMbps != null) {
+            val (dlBg, dlFg) = when {
+                row.downloadSpeedMbps >= 50.0 -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                row.downloadSpeedMbps >= 10.0 -> Color(0xFFE8EAF6) to Color(0xFF283593)
+                else -> Color(0xFFECEFF1) to Color(0xFF455A64)
+            }
+            BenchmarkPill(
+                text = String.format(java.util.Locale.US, "↓ Download: %.2f Mbps", row.downloadSpeedMbps),
+                bgColor = dlBg,
+                fgColor = dlFg
+            )
+        }
+
+        // Upload
+        if (row.uploadSpeedMbps != null) {
+            val (ulBg, ulFg) = when {
+                row.uploadSpeedMbps >= 20.0 -> Color(0xFFE0F2F1) to Color(0xFF00695C)
+                row.uploadSpeedMbps >= 5.0 -> Color(0xFFE0F7FA) to Color(0xFF00838F)
+                else -> Color(0xFFECEFF1) to Color(0xFF455A64)
+            }
+            BenchmarkPill(
+                text = String.format(java.util.Locale.US, "↑ Upload: %.2f Mbps", row.uploadSpeedMbps),
+                bgColor = ulBg,
+                fgColor = ulFg
+            )
+        }
+    }
+}
+
+@Composable
+private fun BenchmarkPill(text: String, bgColor: Color, fgColor: Color) {
+    Surface(
+        shape = RoundedCornerShape(4.dp),
+        color = bgColor,
+        contentColor = fgColor
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+            maxLines = 1
+        )
     }
 }
 

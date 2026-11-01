@@ -1,6 +1,8 @@
 package com.v2ray.ang.service
 
 import android.content.Context
+import com.v2ray.ang.benchmark.BenchmarkConfig
+import com.v2ray.ang.benchmark.BenchmarkEngine
 import com.v2ray.ang.core.CoreConfigManager
 import com.v2ray.ang.core.CoreNativeManager
 import com.v2ray.ang.dto.RealPingEvent
@@ -21,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 internal object RealPingExecutionLimiter {
@@ -39,17 +42,24 @@ internal object RealPingExecutionLimiter {
 }
 
 /**
- * Worker that runs a batch of real-ping tests independently.
+ * Worker that runs a batch of real-ping or full performance benchmark tests independently.
  * Each batch owns its own CoroutineScope/dispatcher and can be cancelled separately.
  */
 class RealPingWorkerService(
     private val context: Context,
     private val guids: List<String>,
     private val onlyTcp: Boolean = false,
+    private val isBenchmark: Boolean = false,
+    private val latencyOnly: Boolean = false,
     private val onEvent: (RealPingEvent) -> Unit = {}
 ) {
     private val job = SupervisorJob()
-    private val concurrency = SettingsManager.getRealPingConcurrency()
+    private val cancelFlag = AtomicBoolean(false)
+    private val concurrency = if (isBenchmark) {
+        SettingsManager.getBenchmarkConcurrency()
+    } else {
+        SettingsManager.getRealPingConcurrency()
+    }
     private val dispatcher = Executors.newFixedThreadPool(if (onlyTcp) concurrency * 2 else concurrency).asCoroutineDispatcher()
     private val scope = CoroutineScope(job + dispatcher + CoroutineName("RealPingBatchWorker"))
 
@@ -57,14 +67,56 @@ class RealPingWorkerService(
     private val totalCount = AtomicInteger(0)
 
     fun start() {
+        val benchmarkConfig = BenchmarkConfig(
+            serverUrl = SettingsManager.getBenchmarkServerUrl(),
+            downloadDurationSec = SettingsManager.getBenchmarkDownloadDuration(),
+            uploadDurationSec = SettingsManager.getBenchmarkUploadDuration(),
+            maxDownloadMb = SettingsManager.getBenchmarkMaxDownloadMb(),
+            maxUploadMb = SettingsManager.getBenchmarkMaxUploadMb(),
+            pingCount = SettingsManager.getBenchmarkPingCount(),
+            timeoutSec = SettingsManager.getBenchmarkTimeoutSeconds(),
+            latencyOnly = latencyOnly,
+        )
+
         val jobs = guids.map { guid ->
             totalCount.incrementAndGet()
             scope.launch {
                 runningCount.incrementAndGet()
                 try {
-                    val result = if (onlyTcp) startTcping(guid) else startRealPing(guid)
-                    if (scope.isActive) {
-                        onEvent(RealPingEvent.Result(guid, result))
+                    if (isBenchmark) {
+                        val profile = MmkvManager.decodeServerConfig(guid)
+                        if (profile != null) {
+                            val res = BenchmarkEngine.runBenchmark(
+                                context = context,
+                                guid = guid,
+                                profile = profile,
+                                config = benchmarkConfig,
+                                cancelFlag = cancelFlag,
+                                onProgress = { step ->
+                                    if (scope.isActive) {
+                                        onEvent(RealPingEvent.Progress("${profile.remarks}: $step"))
+                                    }
+                                }
+                            )
+                            if (scope.isActive) {
+                                onEvent(
+                                    RealPingEvent.Result(
+                                        guid = guid,
+                                        delayMillis = res.pingMs ?: -1L,
+                                        downloadSpeedMbps = res.downloadSpeedMbps,
+                                        uploadSpeedMbps = res.uploadSpeedMbps,
+                                        pingMs = res.pingMs,
+                                        jitterMs = res.jitterMs,
+                                        testStatus = res.status
+                                    )
+                                )
+                            }
+                        }
+                    } else {
+                        val result = if (onlyTcp) startTcping(guid) else startRealPing(guid)
+                        if (scope.isActive) {
+                            onEvent(RealPingEvent.Result(guid, result))
+                        }
                     }
                 } catch (_: Throwable) {
                     // ignore
@@ -93,6 +145,7 @@ class RealPingWorkerService(
     }
 
     fun cancel() {
+        cancelFlag.set(true)
         job.cancel()
     }
 

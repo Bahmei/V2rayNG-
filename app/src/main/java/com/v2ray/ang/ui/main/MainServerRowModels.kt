@@ -13,6 +13,11 @@ internal data class ServerRowUiModel(
     val statistics: String,
     val typeDescription: String,
     val testDelayMillis: Long,
+    val downloadSpeedMbps: Double? = null,
+    val uploadSpeedMbps: Double? = null,
+    val pingMs: Long? = null,
+    val jitterMs: Double? = null,
+    val testStatus: String? = null,
     val subscriptionBadge: String,
 )
 
@@ -34,6 +39,11 @@ internal fun buildServerRowUiModel(
             ?: AngConfigManager.generateDescription(profile),
         typeDescription = serverProtocolDescription(profile),
         testDelayMillis = server.testDelayMillis,
+        downloadSpeedMbps = server.downloadSpeedMbps,
+        uploadSpeedMbps = server.uploadSpeedMbps,
+        pingMs = server.pingMs,
+        jitterMs = server.jitterMs,
+        testStatus = server.testStatus,
         subscriptionBadge = subscriptionRemarks.firstOrNull()?.toString().orEmpty(),
     )
 }
