@@ -12,8 +12,8 @@ android {
         applicationId = "com.aistudio.v2rayng.wvxk"
         minSdk = 26
         targetSdk = 36
-        versionCode = 754
-        versionName = "2.3.14"
+        versionCode = 755
+        versionName = "2.3.15"
 
         buildConfigField("String", "DISTRIBUTION", "\"Standard\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -25,6 +25,8 @@ android {
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 

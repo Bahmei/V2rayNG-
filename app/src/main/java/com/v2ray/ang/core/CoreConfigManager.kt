@@ -33,6 +33,12 @@ object CoreConfigManager {
      */
     fun getV2rayConfig(context: Context, guid: String): ConfigResult {
         try {
+            val profile = MmkvManager.decodeServerConfig(guid)
+            val selectedCore = MmkvManager.decodeSettingsString(AppConfig.PREF_CORE_TYPE)
+            if (profile?.configType == EConfigType.NAIVE || profile?.configType == EConfigType.ANYTLS || selectedCore == AppConfig.CORE_TYPE_SINGBOX) {
+                return SingboxConfigManager.getSingboxConfig(context, guid)
+            }
+
             val configContext = CoreConfigContextBuilder.build(context, guid)
                 ?: return ConfigResult(
                     status = false,
@@ -60,6 +66,12 @@ object CoreConfigManager {
      */
     fun getV2rayConfig4Speedtest(context: Context, guid: String): ConfigResult {
         try {
+            val profile = MmkvManager.decodeServerConfig(guid)
+            val selectedCore = MmkvManager.decodeSettingsString(AppConfig.PREF_CORE_TYPE)
+            if (profile?.configType == EConfigType.NAIVE || profile?.configType == EConfigType.ANYTLS || selectedCore == AppConfig.CORE_TYPE_SINGBOX) {
+                return SingboxConfigManager.getSingboxConfig4Speedtest(context, guid)
+            }
+
             val configContext = CoreConfigContextBuilder.build(context, guid)
                 ?: return ConfigResult(
                     status = false,

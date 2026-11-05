@@ -237,7 +237,16 @@ object AppConfig {
     const val HYSTERIA = "hysteria://"
     const val HYSTERIA2 = "hysteria2://"
     const val HY2 = "hy2://"
+    const val NAIVE = "naive+https://"
+    const val NAIVE_ALT = "naive://"
+    const val NAIVE_QUIC = "naive+quic://"
+    const val ANYTLS = "anytls://"
     const val V2RAYNFMTS = "v2rayn://"
+
+    /** Core Type Settings **/
+    const val PREF_CORE_TYPE = "pref_core_type"
+    const val CORE_TYPE_XRAY = "xray"
+    const val CORE_TYPE_SINGBOX = "singbox"
 
     /** Give a good name to this, IDK*/
     const val VPN = "VPN"

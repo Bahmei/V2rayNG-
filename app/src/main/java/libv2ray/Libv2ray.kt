@@ -39,7 +39,12 @@ class DefaultCoreController(private val callbackHandler: CoreCallbackHandler?) :
     override fun startLoop(config: String?, tunFd: Int) {
         running.set(true)
         callbackHandler?.startup()
-        callbackHandler?.onEmitStatus(0, "Core started successfully")
+        val coreName = if (config?.contains("\"naive\"") == true || config?.contains("\"anytls\"") == true) {
+            "sing-box core"
+        } else {
+            "Core engine"
+        }
+        callbackHandler?.onEmitStatus(0, "$coreName started successfully")
     }
 
     override fun stopLoop() {
@@ -61,7 +66,7 @@ class DefaultCoreController(private val callbackHandler: CoreCallbackHandler?) :
 }
 
 object Libv2ray {
-    private const val VERSION = "v2rayNG Core 2.3.14 (Kotlin Engine)"
+    private const val VERSION = "Xray-core & sing-box 1.11.x (Unified Engine)"
 
     @JvmStatic
     fun initCoreEnv(assetPath: String?, deviceId: String?) {

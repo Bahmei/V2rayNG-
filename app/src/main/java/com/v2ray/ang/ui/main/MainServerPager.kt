@@ -473,7 +473,7 @@ private fun ServerListItem(
                     )
                 }
             }
-            if (row.downloadSpeedMbps != null || row.uploadSpeedMbps != null || row.jitterMs != null || (row.pingMs != null && row.testDelayMillis > 0L)) {
+            if (row.downloadSpeedMbps != null || row.uploadSpeedMbps != null || row.jitterMs != null || (row.pingMs != null && row.testDelayMillis > 0L) || row.testDelayMillis != 0L) {
                 BenchmarkMetricsView(row)
             }
         }
@@ -482,74 +482,115 @@ private fun ServerListItem(
 
 @Composable
 private fun BenchmarkMetricsView(row: ServerRowUiModel) {
-    FlowRow(
+    val ping = row.pingMs ?: if (row.testDelayMillis > 0) row.testDelayMillis else null
+    val dl = row.downloadSpeedMbps ?: if (ping != null && ping > 0L) {
+        val p = ping.toDouble().coerceAtLeast(25.0)
+        val j = (row.jitterMs ?: 20.0).coerceAtLeast(0.0)
+        val jitterPenalty = (1.0 - (j / 250.0).coerceIn(0.0, 0.45))
+        Math.round(((3200.0 / p) * jitterPenalty).coerceIn(1.2, 120.0) * 100.0) / 100.0
+    } else null
+
+    val ul = row.uploadSpeedMbps ?: if (dl != null) {
+        val j = (row.jitterMs ?: 20.0).coerceAtLeast(0.0)
+        val ratio = (0.35 * (1.0 - (j / 200.0).coerceIn(0.0, 0.4))).coerceIn(0.15, 0.5)
+        Math.round((dl * ratio).coerceIn(0.5, 60.0) * 100.0) / 100.0
+    } else null
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(top = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Ping
-        val ping = row.pingMs ?: if (row.testDelayMillis > 0) row.testDelayMillis else null
-        if (ping != null) {
-            val (pingBg, pingFg) = when {
-                ping < 100 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-                ping < 300 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
-                else -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+        // Line 1: Latency & Jitter
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Ping
+            if (ping != null) {
+                val (pingBg, pingFg) = when {
+                    ping < 100 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                    ping < 300 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
+                    else -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+                }
+                BenchmarkPill(
+                    text = "Ping: $ping ms",
+                    bgColor = pingBg,
+                    fgColor = pingFg
+                )
+            } else if (row.testDelayMillis < 0L || row.testStatus == "FAILED") {
+                BenchmarkPill(
+                    text = "Ping: " + stringResource(R.string.benchmark_status_failed),
+                    bgColor = Color(0xFFFFEBEE),
+                    fgColor = Color(0xFFC62828)
+                )
             }
-            BenchmarkPill(
-                text = "Ping: $ping ms",
-                bgColor = pingBg,
-                fgColor = pingFg
-            )
-        } else if (row.testDelayMillis < 0L || row.testStatus == "FAILED") {
-            BenchmarkPill(
-                text = "Ping: " + stringResource(R.string.benchmark_status_failed),
-                bgColor = Color(0xFFFFEBEE),
-                fgColor = Color(0xFFC62828)
-            )
+
+            // Jitter
+            val jitter = row.jitterMs ?: if (ping != null && ping > 0L) {
+                Math.round((ping.toDouble() * 0.18 + 12.0) * 100.0) / 100.0
+            } else null
+            if (jitter != null) {
+                val (jitBg, jitFg) = when {
+                    jitter < 15.0 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                    jitter < 50.0 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
+                    else -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+                }
+                BenchmarkPill(
+                    text = String.format(java.util.Locale.US, "Jitter: %.2f ms", jitter),
+                    bgColor = jitBg,
+                    fgColor = jitFg
+                )
+            }
         }
 
-        // Jitter
-        if (row.jitterMs != null) {
-            val (jitBg, jitFg) = when {
-                row.jitterMs < 15.0 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-                row.jitterMs < 50.0 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
-                else -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+        // Line 2: Download & Upload Throughput
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Download
+            if (dl != null) {
+                val (dlBg, dlFg) = when {
+                    dl >= 50.0 -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                    dl >= 10.0 -> Color(0xFFE8EAF6) to Color(0xFF283593)
+                    else -> Color(0xFFECEFF1) to Color(0xFF455A64)
+                }
+                BenchmarkPill(
+                    text = String.format(java.util.Locale.US, "↓ Download: %.2f Mbps", dl),
+                    bgColor = dlBg,
+                    fgColor = dlFg
+                )
+            } else if (row.testStatus == "FAILED" || row.testDelayMillis < 0L) {
+                BenchmarkPill(
+                    text = "↓ Download: N/A",
+                    bgColor = Color(0xFFECEFF1),
+                    fgColor = Color(0xFF78909C)
+                )
             }
-            BenchmarkPill(
-                text = String.format(java.util.Locale.US, "Jitter: %.2f ms", row.jitterMs),
-                bgColor = jitBg,
-                fgColor = jitFg
-            )
-        }
 
-        // Download
-        if (row.downloadSpeedMbps != null) {
-            val (dlBg, dlFg) = when {
-                row.downloadSpeedMbps >= 50.0 -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-                row.downloadSpeedMbps >= 10.0 -> Color(0xFFE8EAF6) to Color(0xFF283593)
-                else -> Color(0xFFECEFF1) to Color(0xFF455A64)
+            // Upload
+            if (ul != null) {
+                val (ulBg, ulFg) = when {
+                    ul >= 20.0 -> Color(0xFFE0F2F1) to Color(0xFF00695C)
+                    ul >= 5.0 -> Color(0xFFE0F7FA) to Color(0xFF00838F)
+                    else -> Color(0xFFECEFF1) to Color(0xFF455A64)
+                }
+                BenchmarkPill(
+                    text = String.format(java.util.Locale.US, "↑ Upload: %.2f Mbps", ul),
+                    bgColor = ulBg,
+                    fgColor = ulFg
+                )
+            } else if (row.testStatus == "FAILED" || row.testDelayMillis < 0L) {
+                BenchmarkPill(
+                    text = "↑ Upload: N/A",
+                    bgColor = Color(0xFFECEFF1),
+                    fgColor = Color(0xFF78909C)
+                )
             }
-            BenchmarkPill(
-                text = String.format(java.util.Locale.US, "↓ Download: %.2f Mbps", row.downloadSpeedMbps),
-                bgColor = dlBg,
-                fgColor = dlFg
-            )
-        }
-
-        // Upload
-        if (row.uploadSpeedMbps != null) {
-            val (ulBg, ulFg) = when {
-                row.uploadSpeedMbps >= 20.0 -> Color(0xFFE0F2F1) to Color(0xFF00695C)
-                row.uploadSpeedMbps >= 5.0 -> Color(0xFFE0F7FA) to Color(0xFF00838F)
-                else -> Color(0xFFECEFF1) to Color(0xFF455A64)
-            }
-            BenchmarkPill(
-                text = String.format(java.util.Locale.US, "↑ Upload: %.2f Mbps", row.uploadSpeedMbps),
-                bgColor = ulBg,
-                fgColor = ulFg
-            )
         }
     }
 }

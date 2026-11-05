@@ -32,6 +32,8 @@ object CoreOutboundBuilder {
             EConfigType.WIREGUARD -> toOutboundWireguard(profileItem)
             EConfigType.HYSTERIA2 -> toOutboundHysteria2(profileItem)
             EConfigType.HTTP -> toOutboundHttp(profileItem)
+            EConfigType.NAIVE -> toOutboundNaive(profileItem)
+            EConfigType.ANYTLS -> toOutboundAnyTls(profileItem)
             else -> null
         }
 
@@ -230,6 +232,50 @@ object CoreOutboundBuilder {
                 settings.user = profileItem.username.orEmpty()
                 settings.pass = profileItem.password.orEmpty()
             }
+        }
+
+        return outboundBean
+    }
+
+    private fun toOutboundNaive(profileItem: ProfileItem): OutboundBean? {
+        val outboundBean = createInitOutbound(EConfigType.HTTP) ?: return null
+
+        outboundBean.settings?.let { settings ->
+            settings.address = getServerAddress(profileItem)
+            settings.port = profileItem.serverPort.orEmpty().toIntOrNull() ?: 443
+            settings.level = AppConfig.DEFAULT_LEVEL
+            if (profileItem.username.isNotNullEmpty()) {
+                settings.user = profileItem.username.orEmpty()
+                settings.pass = profileItem.password.orEmpty()
+            }
+        }
+
+        profileItem.security = AppConfig.TLS
+        val sni = outboundBean.streamSettings?.let {
+            populateTransportSettings(it, profileItem)
+        }
+        outboundBean.streamSettings?.let {
+            populateTlsSettings(it, profileItem, sni)
+        }
+
+        return outboundBean
+    }
+
+    private fun toOutboundAnyTls(profileItem: ProfileItem): OutboundBean? {
+        val outboundBean = createInitOutbound(EConfigType.TROJAN) ?: return null
+
+        outboundBean.settings?.let { settings ->
+            settings.address = getServerAddress(profileItem)
+            settings.port = profileItem.serverPort.orEmpty().toIntOrNull() ?: 443
+            settings.password = profileItem.password.orEmpty()
+        }
+
+        profileItem.security = AppConfig.TLS
+        val sni = outboundBean.streamSettings?.let {
+            populateTransportSettings(it, profileItem)
+        }
+        outboundBean.streamSettings?.let {
+            populateTlsSettings(it, profileItem, sni)
         }
 
         return outboundBean

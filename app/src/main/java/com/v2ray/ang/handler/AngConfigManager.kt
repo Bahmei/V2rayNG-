@@ -13,8 +13,10 @@ import com.v2ray.ang.dto.entities.SubscriptionItem
 import com.v2ray.ang.dto.entities.SubscriptionUsageInfo
 import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.isNotNullEmpty
+import com.v2ray.ang.fmt.AnyTlsFmt
 import com.v2ray.ang.fmt.CustomFmt
 import com.v2ray.ang.fmt.Hysteria2Fmt
+import com.v2ray.ang.fmt.NaiveFmt
 import com.v2ray.ang.fmt.ShadowsocksFmt
 import com.v2ray.ang.fmt.SocksFmt
 import com.v2ray.ang.fmt.TrojanFmt
@@ -50,6 +52,10 @@ object AngConfigManager {
             EConfigType.WIREGUARD.protocolScheme to WireguardFmt::parse,
             EConfigType.HYSTERIA2.protocolScheme to Hysteria2Fmt::parse,
             AppConfig.HY2 to Hysteria2Fmt::parse,
+            EConfigType.NAIVE.protocolScheme to NaiveFmt::parse,
+            AppConfig.NAIVE_ALT to NaiveFmt::parse,
+            AppConfig.NAIVE_QUIC to NaiveFmt::parse,
+            EConfigType.ANYTLS.protocolScheme to AnyTlsFmt::parse,
         )
     }
 
@@ -165,6 +171,8 @@ object AngConfigManager {
                 EConfigType.TROJAN -> TrojanFmt.toUri(config)
                 EConfigType.WIREGUARD -> WireguardFmt.toUri(config)
                 EConfigType.HYSTERIA2 -> Hysteria2Fmt.toUri(config)
+                EConfigType.NAIVE -> NaiveFmt.toUri(config)
+                EConfigType.ANYTLS -> AnyTlsFmt.toUri(config)
                 else -> {}
             }
         } catch (e: Exception) {

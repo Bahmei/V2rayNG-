@@ -291,8 +291,8 @@ class MainViewModel(
         when (action) {
             MainAction.Initialize -> initialize()
             MainAction.RefreshGroups -> setupGroupTab(forceRefresh = true)
-            MainAction.TestAllServers -> testAllRealPing(true)
-            MainAction.TestRealAllServers -> testAllRealPing()
+            MainAction.TestAllServers -> testAllBenchmark(latencyOnly = false)
+            MainAction.TestRealAllServers -> testAllBenchmark(latencyOnly = false)
             MainAction.TestBenchmarkAllServers -> testAllBenchmark(latencyOnly = false)
             is MainAction.TestBenchmarkSelectedServer -> testSelectedServerBenchmark(action.guid)
             MainAction.RetryFailedBenchmarks -> retryFailedBenchmarks()
