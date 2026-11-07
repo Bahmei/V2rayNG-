@@ -37,6 +37,8 @@ class TProxyService(
 
         private var libraryLoaded = false
 
+        fun isLibraryLoaded() = libraryLoaded
+
         init {
             try {
                 System.loadLibrary("hev-socks5-tunnel")

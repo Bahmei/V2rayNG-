@@ -186,7 +186,7 @@ object SingboxConfigManager {
     }
 
     private fun needTun(): Boolean {
-        return MmkvManager.decodeSettingsBool(AppConfig.PREF_PROXY_ONLY, false) == false
+        return SettingsManager.isVpnMode() && !SettingsManager.isUsingHevTun()
     }
 
     private fun buildOutbound(profile: ProfileItem): JsonObject {

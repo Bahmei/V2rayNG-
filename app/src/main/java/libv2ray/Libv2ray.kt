@@ -44,20 +44,24 @@ class DefaultCoreController(private val callbackHandler: CoreCallbackHandler?) :
         } else {
             "Core engine"
         }
+        if (!com.v2ray.ang.core.LocalProxyEngine.isRunning()) {
+            com.v2ray.ang.core.LocalProxyEngine.start(null)
+        }
         callbackHandler?.onEmitStatus(0, "$coreName started successfully")
     }
 
     override fun stopLoop() {
         running.set(false)
+        com.v2ray.ang.core.LocalProxyEngine.stop()
         callbackHandler?.shutdown()
         callbackHandler?.onEmitStatus(0, "Core stopped")
     }
 
     override fun queryAllOutboundTrafficStats(): String {
         if (!running.get()) return ""
-        simulatedUplink += (512..2048).random()
-        simulatedDownlink += (2048..16384).random()
-        return "proxy,uplink,$simulatedUplink;proxy,downlink,$simulatedDownlink;"
+        val up = com.v2ray.ang.core.LocalProxyEngine.uplinkBytes.get()
+        val down = com.v2ray.ang.core.LocalProxyEngine.downlinkBytes.get()
+        return "proxy,uplink,$up;proxy,downlink,$down;"
     }
 
     override fun measureDelay(url: String?): Long {

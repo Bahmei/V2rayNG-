@@ -67,9 +67,9 @@ class ServerNaiveActivity : BaseServerActivity() {
         )
         FormDropdownField(
             label = stringResource(R.string.server_lab_network),
-            selectedValue = state.network,
+            value = state.network,
             options = listOf("https", "quic"),
-            onSelected = { state.network = it }
+            onValueChange = { state.network = it }
         )
         FormTextField(
             label = stringResource(R.string.server_lab_sni),

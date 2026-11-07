@@ -27,6 +27,9 @@ interface ServiceControl {
      */
     fun vpnProtect(socket: Int): Boolean
 
+    fun protectSocket(socket: java.net.Socket): Boolean = false
+    fun protectDatagramSocket(socket: java.net.DatagramSocket): Boolean = false
+
     /**
      * Declares the networks the tunnel runs on top of.
      * Only meaningful for the VPN service, the other run modes have no interface to report.

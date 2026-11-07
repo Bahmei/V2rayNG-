@@ -106,6 +106,7 @@ class CoreVpnService : VpnService(), ServiceControl {
             LogUtil.e(AppConfig.TAG, "StartCore-VPN: Interface not initialized")
             return
         }
+        com.v2ray.ang.core.TunPacketHandler.start(mInterface)
         if (!CoreServiceManager.startCoreLoop(mInterface)) {
             LogUtil.e(AppConfig.TAG, "StartCore-VPN: Failed to start core loop")
             stopAllService()
@@ -121,6 +122,14 @@ class CoreVpnService : VpnService(), ServiceControl {
     }
 
     override fun vpnProtect(socket: Int): Boolean {
+        return protect(socket)
+    }
+
+    override fun protectSocket(socket: java.net.Socket): Boolean {
+        return protect(socket)
+    }
+
+    override fun protectDatagramSocket(socket: java.net.DatagramSocket): Boolean {
         return protect(socket)
     }
 
@@ -247,9 +256,7 @@ class CoreVpnService : VpnService(), ServiceControl {
         // Android Q (API 29) and above: Configure metering and HTTP proxy
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             builder.setMetered(false)
-            if (MmkvManager.decodeSettingsBool(AppConfig.PREF_APPEND_HTTP_PROXY)) {
-                builder.setHttpProxy(ProxyInfo.buildDirectProxy(LOOPBACK, SettingsManager.getHttpPort()))
-            }
+            builder.setHttpProxy(ProxyInfo.buildDirectProxy(LOOPBACK, SettingsManager.getHttpPort()))
         }
     }
 
@@ -324,6 +331,8 @@ class CoreVpnService : VpnService(), ServiceControl {
 //        saveVpnNetworkInfo(configName, info)
         unlockStart()
         isRunning = false
+
+        com.v2ray.ang.core.TunPacketHandler.stop()
 
         tun2SocksService?.stopTun2Socks()
         tun2SocksService = null

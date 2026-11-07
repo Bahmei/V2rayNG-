@@ -45,6 +45,13 @@
     <string name="menu_item_import_config_manually_trojan">Thêm [Trojan]</string>
     <string name="menu_item_import_config_manually_wireguard">Thêm [WireGuard]</string>
     <string name="menu_item_import_config_manually_hysteria2">Thêm [Hysteria2]</string>
+    <string name="menu_item_import_config_manually_naive">Thêm [NaïveProxy]</string>
+    <string name="menu_item_import_config_manually_anytls">Thêm [AnyTLS]</string>
+    <string name="title_sub_naive">NaïveProxy</string>
+    <string name="title_sub_anytls">AnyTLS</string>
+    <string name="core_type_singbox">sing-box</string>
+    <string name="core_type_xray">Xray</string>
+    <string name="server_lab_username">Tên người dùng</string>
     <string name="confirm_delete_visible_profiles">Bạn có chắc muốn xóa tất cả cấu hình đang hiển thị không?</string>
     <string name="confirm_delete_duplicate_profiles">Bạn có chắc muốn xóa tất cả cấu hình trùng lặp đang hiển thị không?</string>
     <string name="confirm_delete_invalid_profiles">Vui lòng kiểm tra các cấu hình trước. Bạn có chắc muốn xóa tất cả cấu hình không hợp lệ đang hiển thị không?</string>

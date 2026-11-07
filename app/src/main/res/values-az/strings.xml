@@ -45,6 +45,13 @@
     <string name="menu_item_import_config_manually_trojan">[Trojan] əlavə et</string>
     <string name="menu_item_import_config_manually_wireguard">[WireGuard] əlavə et</string>
     <string name="menu_item_import_config_manually_hysteria2">[Hysteria2] əlavə et</string>
+    <string name="menu_item_import_config_manually_naive">[NaïveProxy] əlavə et</string>
+    <string name="menu_item_import_config_manually_anytls">[AnyTLS] əlavə et</string>
+    <string name="title_sub_naive">NaïveProxy</string>
+    <string name="title_sub_anytls">AnyTLS</string>
+    <string name="core_type_singbox">sing-box</string>
+    <string name="core_type_xray">Xray</string>
+    <string name="server_lab_username">İstifadəçi adı</string>
     <string name="confirm_delete_visible_profiles">Hazırda göstərilən bütün profilləri silmək istədiyinizə əminsiniz?</string>
     <string name="confirm_delete_duplicate_profiles">Hazırda göstərilən bütün təkrar profilləri silmək istədiyinizə əminsiniz?</string>
     <string name="confirm_delete_invalid_profiles">Zəhmət olmasa əvvəlcə profilləri sınaqdan keçirin. Hazırda göstərilən bütün yararsız profilləri silmək istədiyinizə əminsiniz?</string>

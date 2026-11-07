@@ -45,6 +45,13 @@
     <string name="menu_item_import_config_manually_trojan">ٱووردن [Trojan]</string>
     <string name="menu_item_import_config_manually_wireguard">ٱووردن [WireGuard]</string>
     <string name="menu_item_import_config_manually_hysteria2">ٱووردن [Hysteria2]</string>
+    <string name="menu_item_import_config_manually_naive">ٱووردن [NaïveProxy]</string>
+    <string name="menu_item_import_config_manually_anytls">ٱووردن [AnyTLS]</string>
+    <string name="title_sub_naive">NaïveProxy</string>
+    <string name="title_sub_anytls">AnyTLS</string>
+    <string name="core_type_singbox">sing-box</string>
+    <string name="core_type_xray">Xray</string>
+    <string name="server_lab_username">نوم کاربری</string>
     <string name="confirm_delete_visible_profiles">پوی کانفیگا ک هیم سکو نشووݩ داڌه ابۊن پاک ابۊن، هنی هم اخۊی پاکسووݩ کۊنی؟</string>
     <string name="confirm_delete_duplicate_profiles">پوی کانفیگا تکراری ک هیم سکو نشووݩ داڌه ابۊن پاک ابۊن، هنی هم اخۊی پاکسووݩ کۊنی؟</string>
     <string name="confirm_delete_invalid_profiles">ٱول کانفیگا ن آزمایش کۊنین. پوی کانفیگا نا موئتبر ک هیم سکو نشووݩ داڌه ابۊن پاک ابۊن، هنی هم اخۊی پاکسووݩ کۊنی؟</string>

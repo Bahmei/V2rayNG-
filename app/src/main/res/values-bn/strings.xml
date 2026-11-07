@@ -45,6 +45,13 @@
     <string name="menu_item_import_config_manually_trojan">[Trojan] যোগ করুন</string>
     <string name="menu_item_import_config_manually_wireguard">[WireGuard] যোগ করুন</string>
     <string name="menu_item_import_config_manually_hysteria2">[Hysteria2] যোগ করুন</string>
+    <string name="menu_item_import_config_manually_naive">[NaïveProxy] যোগ করুন</string>
+    <string name="menu_item_import_config_manually_anytls">[AnyTLS] যোগ করুন</string>
+    <string name="title_sub_naive">NaïveProxy</string>
+    <string name="title_sub_anytls">AnyTLS</string>
+    <string name="core_type_singbox">sing-box</string>
+    <string name="core_type_xray">Xray</string>
+    <string name="server_lab_username">ব্যবহারকারীর নাম</string>
     <string name="confirm_delete_visible_profiles">আপনি কি বর্তমানে প্রদর্শিত সব প্রোফাইল মুছে ফেলতে চান?</string>
     <string name="confirm_delete_duplicate_profiles">আপনি কি বর্তমানে প্রদর্শিত সব সদৃশ প্রোফাইল মুছে ফেলতে চান?</string>
     <string name="confirm_delete_invalid_profiles">প্রথমে প্রোফাইলগুলো পরীক্ষা করুন। আপনি কি বর্তমানে প্রদর্শিত সব অবৈধ প্রোফাইল মুছে ফেলতে চান?</string>

@@ -45,6 +45,13 @@
     <string name="menu_item_import_config_manually_trojan">إضافة [Trojan]</string>
     <string name="menu_item_import_config_manually_wireguard">إضافة [WireGuard]</string>
     <string name="menu_item_import_config_manually_hysteria2">إضافة [Hysteria2]</string>
+    <string name="menu_item_import_config_manually_naive">إضافة [NaïveProxy]</string>
+    <string name="menu_item_import_config_manually_anytls">إضافة [AnyTLS]</string>
+    <string name="title_sub_naive">NaïveProxy</string>
+    <string name="title_sub_anytls">AnyTLS</string>
+    <string name="core_type_singbox">sing-box</string>
+    <string name="core_type_xray">Xray</string>
+    <string name="server_lab_username">اسم المستخدم</string>
     <string name="confirm_delete_visible_profiles">هل أنت متأكد من أنك تريد حذف جميع ملفات التعريف المعروضة حاليًا؟</string>
     <string name="confirm_delete_duplicate_profiles">هل أنت متأكد من أنك تريد حذف جميع ملفات التعريف المكررة المعروضة حاليًا؟</string>
     <string name="confirm_delete_invalid_profiles">يرجى اختبار ملفات التعريف أولًا. هل أنت متأكد من أنك تريد حذف جميع ملفات التعريف غير الصالحة المعروضة حاليًا؟</string>

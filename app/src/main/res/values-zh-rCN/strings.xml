@@ -45,6 +45,13 @@
     <string name="menu_item_import_config_manually_trojan">添加 [Trojan]</string>
     <string name="menu_item_import_config_manually_wireguard">添加 [WireGuard]</string>
     <string name="menu_item_import_config_manually_hysteria2">添加 [Hysteria2]</string>
+    <string name="menu_item_import_config_manually_naive">添加 [NaïveProxy]</string>
+    <string name="menu_item_import_config_manually_anytls">添加 [AnyTLS]</string>
+    <string name="title_sub_naive">NaïveProxy</string>
+    <string name="title_sub_anytls">AnyTLS</string>
+    <string name="core_type_singbox">sing-box</string>
+    <string name="core_type_xray">Xray</string>
+    <string name="server_lab_username">用户名</string>
     <string name="confirm_delete_visible_profiles">确定要删除当前显示的所有配置吗？</string>
     <string name="confirm_delete_duplicate_profiles">确定要删除当前显示的所有重复配置吗？</string>
     <string name="confirm_delete_invalid_profiles">请先测试配置。确定要删除当前显示的所有无效配置吗？</string>

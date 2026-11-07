@@ -12,8 +12,8 @@ android {
         applicationId = "com.aistudio.v2rayng.wvxk"
         minSdk = 26
         targetSdk = 36
-        versionCode = 755
-        versionName = "2.3.15"
+        versionCode = 757
+        versionName = "2.3.17"
 
         buildConfigField("String", "DISTRIBUTION", "\"Standard\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

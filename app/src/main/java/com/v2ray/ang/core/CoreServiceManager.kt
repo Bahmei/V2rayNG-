@@ -83,6 +83,14 @@ object CoreServiceManager {
      */
     fun getRunningServerName() = currentConfig?.remarks.orEmpty()
 
+    fun protect(socket: java.net.Socket): Boolean {
+        return serviceControl?.get()?.protectSocket(socket) ?: true
+    }
+
+    fun protect(socket: java.net.DatagramSocket): Boolean {
+        return serviceControl?.get()?.protectDatagramSocket(socket) ?: true
+    }
+
     /**
      * Refer to the official documentation for [registerReceiver](https://developer.android.com/reference/androidx/core/content/ContextCompat#registerReceiver(android.content.Context,android.content.BroadcastReceiver,android.content.IntentFilter,int):
      * `registerReceiver(Context, BroadcastReceiver, IntentFilter, int)`.
@@ -153,6 +161,7 @@ object CoreServiceManager {
         if (dialerAddr.isNotNullEmpty()) {
             CoreNativeManager.reconcileBrowserDialer(dialerAddr)
         }
+        LocalProxyEngine.start(currentConfig, SettingsManager.getSocksPort())
         coreController.startLoop(result.content, tunFd)
 
         if (!isRunning()) {
@@ -200,11 +209,14 @@ object CoreServiceManager {
         if (isRunning()) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
+                    LocalProxyEngine.stop()
                     coreController.stopLoop()
                 } catch (e: Exception) {
                     LogUtil.e(AppConfig.TAG, "StartCore-Manager: Failed to stop V2Ray loop", e)
                 }
             }
+        } else {
+            LocalProxyEngine.stop()
         }
 
         // Close existing browser dialer
