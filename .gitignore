@@ -45,8 +45,9 @@ V2rayNG/app/google-services.json
 *.bak
 *.swp
 *.orig
-*.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
+!debug.keystore
 *.war
 *.ear
 

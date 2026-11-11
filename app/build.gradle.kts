@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,8 +14,8 @@ android {
         applicationId = "com.aistudio.v2rayng.wvxk"
         minSdk = 26
         targetSdk = 36
-        versionCode = 757
-        versionName = "2.3.17"
+        versionCode = 759
+        versionName = "2.3.19"
 
         buildConfigField("String", "DISTRIBUTION", "\"Standard\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -21,7 +23,14 @@ android {
 
     signingConfigs {
         getByName("debug") {
-            storeFile = file("${rootDir}/debug.keystore")
+            val ksFile = file("${rootDir}/debug.keystore")
+            if (!ksFile.exists()) {
+                val b64File = file("${rootDir}/debug.keystore.base64")
+                if (b64File.exists()) {
+                    ksFile.writeBytes(Base64.getDecoder().decode(b64File.readText().trim()))
+                }
+            }
+            storeFile = ksFile
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"

@@ -301,7 +301,7 @@ object LocalProxyEngine {
     //endregion
 
     //region Remote Connection & Streaming
-    private fun connectToRemote(targetHost: String, targetPort: Int): Socket? {
+    fun connectToRemote(targetHost: String, targetPort: Int): Socket? {
         val profile = activeProfile ?: MmkvManager.getSelectServer()?.let { MmkvManager.decodeServerConfig(it) }
         return try {
             val remoteSocket: Socket = when {
